@@ -1,0 +1,22 @@
+{
+  "name": "MKBaseBleModule",
+  "version": "0.1.0",
+  "summary": "A short description of MKBaseBleModule.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/aadyx2007@163.com/MKBaseBleModule",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "aadyx2007@163.com": "aadyx2007@163.com"
+  },
+  "source": {
+    "git": "https://github.com/aadyx2007@163.com/MKBaseBleModule.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source_files": "MKBaseBleModule/Classes/**/*"
+}

@@ -1,0 +1,6 @@
+framework module Pods_MKBaseBleModule_Tests {
+  umbrella header "Pods-MKBaseBleModule_Tests-umbrella.h"
+
+  export *
+  module * { export * }
+}

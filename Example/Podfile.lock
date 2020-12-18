@@ -1,0 +1,27 @@
+PODS:
+  - FBSnapshotTestCase (2.1.4):
+    - FBSnapshotTestCase/SwiftSupport (= 2.1.4)
+  - FBSnapshotTestCase/Core (2.1.4)
+  - FBSnapshotTestCase/SwiftSupport (2.1.4):
+    - FBSnapshotTestCase/Core
+  - MKBaseBleModule (0.1.0)
+
+DEPENDENCIES:
+  - FBSnapshotTestCase
+  - MKBaseBleModule (from `../`)
+
+SPEC REPOS:
+  trunk:
+    - FBSnapshotTestCase
+
+EXTERNAL SOURCES:
+  MKBaseBleModule:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
+  MKBaseBleModule: a14a86df33f581f2237f5cf040f92e454a79bf1b
+
+PODFILE CHECKSUM: f4e2af81be2ac9aa6c057b4da7bb8790ec72dee3
+
+COCOAPODS: 1.10.0.rc.1
