@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MKBaseBleModule'
-  s.version          = '1.0.0'
+  s.version          = '1.0.1'
   s.summary          = 'Bluetooth basic component library of MOKO.'
 
   s.description      = <<-DESC

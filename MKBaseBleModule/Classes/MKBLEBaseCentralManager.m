@@ -223,14 +223,28 @@ typedef NS_ENUM(NSInteger, mk_currentAction) {
 
 #pragma mark - public method
 - (CBPeripheral *)peripheral {
-    return (!self.peripheralManager ? nil : self.peripheralManager.peripheral);
+    return self.peripheralManager.peripheral;
 }
 
 - (void)loadDataManager:(id<MKBLEBaseCentralManagerProtocol>)dataManager {
-    if (dataManager
-        && [dataManager conformsToProtocol:@protocol(MKBLEBaseCentralManagerProtocol)]
-        && ![self.managerList containsObject:dataManager]) {
-        [self.managerList addObject:dataManager];
+    @synchronized (self.managerList) {
+        if (dataManager
+            && [dataManager conformsToProtocol:@protocol(MKBLEBaseCentralManagerProtocol)]
+            && ![self.managerList containsObject:dataManager]) {
+            [self.managerList addObject:dataManager];
+        }
+    }
+}
+
+- (BOOL)removeDataManager:(nonnull id <MKBLEBaseCentralManagerProtocol>)dataManager {
+    @synchronized (self.managerList) {
+        if (!dataManager ||
+            ![dataManager conformsToProtocol:@protocol(MKBLEBaseCentralManagerProtocol)] ||
+            ![self.managerList containsObject:dataManager]) {
+            return NO;
+        }
+        [self.managerList removeObject:dataManager];
+        return YES;
     }
 }
 
@@ -345,8 +359,24 @@ typedef NS_ENUM(NSInteger, mk_currentAction) {
         || ![operation conformsToProtocol:@protocol(MKBLEBaseOperationProtocol)]) {
         return NO;
     }
-    @synchronized (self.operationQueue) {
-        [self.operationQueue addOperation:operation];
+    @synchronized (self.operationQueue.operations) {
+        if (![self.operationQueue.operations containsObject:operation]) {
+            [self.operationQueue addOperation:operation];
+        }
+    }
+    return YES;
+}
+
+- (BOOL)removeOperation:(nonnull NSOperation <MKBLEBaseOperationProtocol>*)operation {
+    if (!operation
+        || ![operation isKindOfClass:NSOperation.class]
+        || ![operation conformsToProtocol:@protocol(MKBLEBaseOperationProtocol)]) {
+        return NO;
+    }
+    @synchronized (self.operationQueue.operations) {
+        if ([self.operationQueue.operations containsObject:operation]) {
+            [operation cancel];
+        }
     }
     return YES;
 }

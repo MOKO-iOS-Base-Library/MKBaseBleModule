@@ -38,7 +38,7 @@
 
 /* Begin PBXFileReference section */
 		0B50E4565D845DD998847C26 /* Pods-MKBaseBleModule_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MKBaseBleModule_Tests.debug.xcconfig"; path = "Target Support Files/Pods-MKBaseBleModule_Tests/Pods-MKBaseBleModule_Tests.debug.xcconfig"; sourceTree = "<group>"; };
-		2666B9769EB22CAB47FF62D3 /* MKBaseBleModule.podspec */ = {isa = PBXFileReference; includeInIndex = 1; name = MKBaseBleModule.podspec; path = ../MKBaseBleModule.podspec; sourceTree = "<group>"; };
+		2666B9769EB22CAB47FF62D3 /* MKBaseBleModule.podspec */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = MKBaseBleModule.podspec; path = ../MKBaseBleModule.podspec; sourceTree = "<group>"; };
 		6003F58A195388D20070C39A /* MKBaseBleModule_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MKBaseBleModule_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6003F58D195388D20070C39A /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		6003F58F195388D20070C39A /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -62,10 +62,10 @@
 		703C3CCC8C0F86BEAA3021C6 /* Pods_MKBaseBleModule_Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MKBaseBleModule_Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		71719F9E1E33DC2100824A3D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		873B8AEA1B1F5CCA007FD442 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		8C7282EFEB805040C7843AAB /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
+		8C7282EFEB805040C7843AAB /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
 		A323F4AB9A54295ABF6840D6 /* Pods-MKBaseBleModule_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MKBaseBleModule_Example.debug.xcconfig"; path = "Target Support Files/Pods-MKBaseBleModule_Example/Pods-MKBaseBleModule_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		BCB0E510761569EEC461CD24 /* Pods-MKBaseBleModule_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MKBaseBleModule_Example.release.xcconfig"; path = "Target Support Files/Pods-MKBaseBleModule_Example/Pods-MKBaseBleModule_Example.release.xcconfig"; sourceTree = "<group>"; };
-		D2A46FE23577A8CB22B0C2E8 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; name = README.md; path = ../README.md; sourceTree = "<group>"; };
+		D2A46FE23577A8CB22B0C2E8 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		F42985E4705C28946013DE8C /* Pods-MKBaseBleModule_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MKBaseBleModule_Tests.release.xcconfig"; path = "Target Support Files/Pods-MKBaseBleModule_Tests/Pods-MKBaseBleModule_Tests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -193,7 +193,6 @@
 				0B50E4565D845DD998847C26 /* Pods-MKBaseBleModule_Tests.debug.xcconfig */,
 				F42985E4705C28946013DE8C /* Pods-MKBaseBleModule_Tests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -259,6 +258,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -468,7 +468,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -501,7 +501,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
@@ -516,10 +516,12 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MKBaseBleModule/MKBaseBleModule-Prefix.pch";
 				INFOPLIST_FILE = "MKBaseBleModule/MKBaseBleModule-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -532,10 +534,12 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "MKBaseBleModule/MKBaseBleModule-Prefix.pch";
 				INFOPLIST_FILE = "MKBaseBleModule/MKBaseBleModule-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				MODULE_NAME = ExampleApp;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 4.0;
+				TARGETED_DEVICE_FAMILY = 1;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

@@ -47,6 +47,10 @@ typedef void(^MKBLEConnectSuccessBlock)(CBPeripheral *peripheral);
 /// @param dataManager MKBLECentralManagerProtocol
 - (void)loadDataManager:(nonnull id <MKBLEBaseCentralManagerProtocol>)dataManager;
 
+/// 将满足MKBLECentralManagerProtocol的对象移除管理列表
+/// @param dataManager MKBLECentralManagerProtocol的对象
+- (BOOL)removeDataManager:(nonnull id <MKBLEBaseCentralManagerProtocol>)dataManager;
+
 #pragma mark - ************************* 扫描 **************************
 
 /// 扫描
@@ -87,6 +91,10 @@ typedef void(^MKBLEConnectSuccessBlock)(CBPeripheral *peripheral);
 /// 添加一个operation到当前数据队列
 /// @param operation operation
 - (BOOL)addOperation:(nonnull NSOperation <MKBLEBaseOperationProtocol>*)operation;
+
+/// 将一个operation移出当前数据队列
+/// @param operation operation
+- (BOOL)removeOperation:(nonnull NSOperation <MKBLEBaseOperationProtocol>*)operation;
 
 @end
 
