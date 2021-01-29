@@ -11,6 +11,13 @@
 #import "MKBLEBaseDataProtocol.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+typedef NS_ENUM(NSInteger, mk_currentAction) {
+    mk_managerActionDefault,
+    mk_managerActionScan,
+    mk_managerActionConnecting,
+};
+
 ///  当前外设连接状态发生改变通知
 extern NSString *const MKPeripheralConnectStateChangedNotification;
 ///  当前蓝牙中心状态发生改变通知
@@ -34,6 +41,9 @@ typedef void(^MKBLEConnectSuccessBlock)(CBPeripheral *peripheral);
 
 /// 当前蓝牙中心状态
 @property (nonatomic, assign, readonly)MKCentralManagerState centralStatus;
+
+/// 当前manager处于什么状态，默认、连接、和扫描
+@property (nonatomic, assign, readonly)mk_currentAction managerAction;
 
 + (MKBLEBaseCentralManager *)shared;
 
