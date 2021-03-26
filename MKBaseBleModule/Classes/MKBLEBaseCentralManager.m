@@ -432,7 +432,9 @@ static NSTimeInterval const defaultConnectTime = 20.f;
                         sucBlock:(MKBLEConnectSuccessBlock)sucBlock
                     failedBlock:(MKBLEConnectFailedBlock)failedBlock{
     if (self.peripheralManager) {
-        [self.centralManager cancelPeripheralConnection:self.peripheralManager.peripheral];
+        if (self.peripheralManager.peripheral) {
+            [self.centralManager cancelPeripheralConnection:self.peripheralManager.peripheral];
+        }
         [self.peripheralManager setNil];
         self.peripheralManager = nil;
     }
@@ -481,7 +483,9 @@ static NSTimeInterval const defaultConnectTime = 20.f;
 - (void)connectPeripheralFailed{
     [self resetOriSettings];
     if (self.peripheralManager) {
-        [self.centralManager cancelPeripheralConnection:self.peripheralManager.peripheral];
+        if (self.peripheralManager.peripheral) {
+            [self.centralManager cancelPeripheralConnection:self.peripheralManager.peripheral];
+        }
         [self.peripheralManager setNil];
         self.peripheralManager = nil;
     }
