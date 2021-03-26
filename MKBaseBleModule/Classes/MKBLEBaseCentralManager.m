@@ -290,7 +290,7 @@ static NSTimeInterval const defaultConnectTime = 20.f;
 - (void)connectDevice:(id <MKBLEBasePeripheralProtocol>)peripheralProtocol
              sucBlock:(MKBLEConnectSuccessBlock)sucBlock
           failedBlock:(MKBLEConnectFailedBlock)failedBlock {
-    if (!peripheralProtocol || ![peripheralProtocol conformsToProtocol:@protocol(MKBLEBasePeripheralProtocol)]) {
+    if (!peripheralProtocol || !peripheralProtocol.peripheral || ![peripheralProtocol conformsToProtocol:@protocol(MKBLEBasePeripheralProtocol)]) {
         [MKBLEBaseSDKAdopter operationProtocolErrorBlock:failedBlock];
         return;
     }
@@ -308,16 +308,16 @@ static NSTimeInterval const defaultConnectTime = 20.f;
     __weak typeof(self) weakSelf = self;
     [self connectWithProtocol:peripheralProtocol sucBlock:^(CBPeripheral * _Nonnull peripheral) {
         __strong typeof(self) sself = weakSelf;
+        [sself clearConnectBlock];
         if (sucBlock) {
             sucBlock(peripheral);
         }
-        [sself clearConnectBlock];
     } failedBlock:^(NSError * _Nonnull error) {
         __strong typeof(self) sself = weakSelf;
+        [sself clearConnectBlock];
         if (failedBlock) {
             failedBlock(error);
         }
-        [sself clearConnectBlock];
     }];
 }
 - (void)disconnect {
