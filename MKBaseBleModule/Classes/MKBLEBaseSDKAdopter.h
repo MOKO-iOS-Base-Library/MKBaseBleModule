@@ -83,8 +83,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /// 将一个十进制的数据转换成对应byteLen字节长度的十六进制数据，
 /*
- [MKBGSDKDataAdopter fetchHexValue:10 byteLen:4] ==>@"0000000a"
- [MKBGSDKDataAdopter fetchHexValue:10 byteLen:1] ==>@"0a"
+ [MKBLEBaseSDKAdopter fetchHexValue:10 byteLen:4] ==>@"0000000a"
+ [MKBLEBaseSDKAdopter fetchHexValue:10 byteLen:1] ==>@"0a"
  */
 /// @param value 十进制
 /// @param byteLen 字节长度

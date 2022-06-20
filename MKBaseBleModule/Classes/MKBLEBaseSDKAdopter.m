@@ -160,25 +160,30 @@
 }
 
 + (NSData *)stringToData:(NSString *)dataString{
-    if (!MKValidStr(dataString) || !(dataString.length % 2 == 0)) {
+    if (!MKValidStr(dataString)) {
         return [NSData data];
     }
-    for (NSInteger i = 0; i < dataString.length; i ++) {
-        if (![self checkHexCharacter:[dataString substringWithRange:NSMakeRange(i, 1)]]) {
-            return [NSData data];
-        }
+        
+    NSMutableData *hexData = [[NSMutableData alloc] initWithCapacity:20];
+    NSRange range;
+    if ([dataString length] % 2 == 0) {
+        range = NSMakeRange(0, 2);
+    } else {
+        range = NSMakeRange(0, 1);
     }
-    Byte bytes[255] = {0};
-    NSInteger count = 0;
-    for (int i =0; i < dataString.length; i+=2) {
-        NSString *strByte = [dataString substringWithRange:NSMakeRange(i,2)];
-        unsigned long red = strtoul([strByte UTF8String],0,16);
-        Byte b =  (Byte) ((0xff & red) );//( Byte) 0xff&iByte;
-        bytes[i/2+0] = b;
-        count ++;
+    for (NSInteger i = range.location; i < [dataString length]; i += 2) {
+        unsigned int anInt;
+        NSString *hexCharStr = [dataString substringWithRange:range];
+        NSScanner *scanner = [[NSScanner alloc] initWithString:hexCharStr];
+        
+        [scanner scanHexInt:&anInt];
+        NSData *entity = [[NSData alloc] initWithBytes:&anInt length:1];
+        [hexData appendData:entity];
+        
+        range.location += range.length;
+        range.length = 2;
     }
-    NSData * data = [NSData dataWithBytes:bytes length:count];
-    return data;
+    return hexData;
 }
 
 + (BOOL)checkHexCharacter:(NSString *)character {
