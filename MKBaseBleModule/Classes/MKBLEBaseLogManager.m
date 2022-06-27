@@ -73,7 +73,7 @@ static const char *formatterKey = "formatterKey";
 
 #pragma mark - private method
 + (NSString *)cachesDirectory {
-    return [NSSearchPathForDirectoriesInDomains(NSCachesDirectory,NSUserDomainMask,YES)lastObject];
+    return [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES)lastObject];
 }
 
 /**
