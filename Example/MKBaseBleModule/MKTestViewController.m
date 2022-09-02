@@ -25,6 +25,16 @@
     NSString *binary = [MKBLEBaseSDKAdopter getHexByBinary:@"10101010"];
     
     NSString *binary11 = [MKBLEBaseSDKAdopter getHexByBinary:@"100000000001100000000001"];
+    
+    BOOL result1 = [MKBLEBaseSDKAdopter checkHexCharacter:@"abcdef0"];
+    
+    BOOL result2 = [MKBLEBaseSDKAdopter checkHexCharacter:@"0a"];
+    
+    BOOL result3 = [MKBLEBaseSDKAdopter checkHexCharacter:@"asd"];
+    
+    BOOL result4 = [MKBLEBaseSDKAdopter checkHexCharacter:@"1"];
+    
+    
     NSLog(@"%@",binary11);
 }
 

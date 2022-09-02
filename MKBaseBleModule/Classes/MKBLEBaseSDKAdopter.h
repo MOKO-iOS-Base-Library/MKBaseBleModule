@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
 /// @param dataString dataString
 + (NSData *)stringToData:(NSString *)dataString;
 
-/// 判断一个字符是否是16进制字符
+/// 判断字符串是否是十六进制
 /// @param character character
 + (BOOL)checkHexCharacter:(NSString *)character;
 
