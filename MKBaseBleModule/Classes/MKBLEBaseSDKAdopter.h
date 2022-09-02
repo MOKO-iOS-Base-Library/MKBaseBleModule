@@ -58,10 +58,10 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)checkHexCharacter:(NSString *)character;
 
 /**
- 将一个字节的16进制数据转成8位2进制
+ 将16进制数据转成2进制
  
  @param hex 需要转换的16进制数据
- @return 转换后的8位2进制数据
+ @return 转换后的2进制数据
  */
 + (NSString *)binaryByhex:(NSString *)hex;
 
@@ -74,7 +74,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)isUUIDString:(NSString *)uuid;
 
 /**
- 二进制转换成一个字节的十六进制
+ 二进制转换成十六进制
  
  @param binary 二进制数
  @return 十六进制数
