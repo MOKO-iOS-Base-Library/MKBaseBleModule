@@ -4,7 +4,7 @@ PODS:
   - FBSnapshotTestCase/Core (2.1.4)
   - FBSnapshotTestCase/SwiftSupport (2.1.4):
     - FBSnapshotTestCase/Core
-  - MKBaseBleModule (1.0.5)
+  - MKBaseBleModule (1.1.5)
 
 DEPENDENCIES:
   - FBSnapshotTestCase
@@ -20,8 +20,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   FBSnapshotTestCase: 094f9f314decbabe373b87cc339bea235a63e07a
-  MKBaseBleModule: 73aa5ec72a1d0e9900f2cd513221d18665b63351
+  MKBaseBleModule: 68d556f6256df48d3764bc67f8c68193d9f88cca
 
-PODFILE CHECKSUM: 2a08af55f6ec1b19f7114409debf4c18436a4f05
+PODFILE CHECKSUM: 714246121d12c51ede42d43b3b125724b9c3513a
 
-COCOAPODS: 1.10.0.rc.1
+COCOAPODS: 1.16.2

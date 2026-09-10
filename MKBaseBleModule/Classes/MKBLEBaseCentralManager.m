@@ -16,7 +16,7 @@ NSString *const MKCentralManagerStateChangedNotification = @"MKCentralManagerSta
 static MKBLEBaseCentralManager *manager = nil;
 static dispatch_once_t onceToken;
 
-static NSTimeInterval const defaultConnectTime = 20.f;
+static NSTimeInterval const defaultConnectTime = 40.f;
 
 @interface NSObject (MKBLECentralManager)
 

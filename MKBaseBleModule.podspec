@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'MKBaseBleModule'
-  s.version          = '1.1.4'
+  s.version          = '1.1.5'
   s.summary          = 'Bluetooth basic component library of MOKO.'
 
   s.description      = <<-DESC
@@ -21,7 +21,7 @@ TODO: Add long description of the pod here.
   s.source           = { :git => 'https://github.com/MOKO-iOS-Base-Library/MKBaseBleModule.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '12.0'
+  s.ios.deployment_target = '18.0'
 
   s.source_files = 'MKBaseBleModule/Classes/**/*'
   
