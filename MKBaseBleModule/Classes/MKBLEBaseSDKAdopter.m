@@ -8,6 +8,58 @@
 #import "MKBLEBaseSDKAdopter.h"
 #import "MKBLEBaseSDKDefines.h"
 
+#pragma mark - C 层辅助函数
+
+/// 单个字符转十六进制值，非法字符返回 -1
+static inline int mkb_hexCharValue(char c) {
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    }
+    if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return -1;
+}
+
+/// 整串是否全部为合法的十六进制字符，等价于原来的 "[a-fA-F0-9]*" 整串正则匹配
+static BOOL mkb_isHexString(NSString *string) {
+    const char *utf8 = [string UTF8String];
+    if (utf8 == NULL) {
+        return NO;
+    }
+    size_t length = strlen(utf8);
+    for (size_t i = 0; i < length; i ++) {
+        if (mkb_hexCharValue(utf8[i]) < 0) {
+            return NO;
+        }
+    }
+    return YES;
+}
+
+/// 十六进制字符串转无符号整数，遇到非法字符停止，与 NSScanner 的扫描行为一致
+static unsigned long long mkb_hexToULL(const char *utf8, size_t length) {
+    unsigned long long value = 0;
+    for (size_t i = 0; i < length; i ++) {
+        int digit = mkb_hexCharValue(utf8[i]);
+        if (digit < 0) {
+            break;
+        }
+        value = (value << 4) | (unsigned long long)digit;
+    }
+    return value;
+}
+
+/// 十六进制字符对应的 4 位二进制字符串
+static const char * const kMKBHexBitStrings[16] = {
+    "0000", "0001", "0010", "0011",
+    "0100", "0101", "0110", "0111",
+    "1000", "1001", "1010", "1011",
+    "1100", "1101", "1110", "1111",
+};
+
 @implementation MKBLEBaseSDKAdopter
 
 + (NSError *)getErrorWithCode:(NSInteger)code message:(NSString *)message {
@@ -75,16 +127,21 @@
     if (!MKValidStr(content)) {
         return 0;
     }
-    for (NSInteger i = 0; i < content.length; i ++) {
-        if (![self checkHexCharacter:[content substringWithRange:NSMakeRange(i, 1)]]) {
-            return 0;
-        }
+    // 与原逻辑一致：整串必须是合法的十六进制字符串
+    if (!mkb_isHexString(content)) {
+        return 0;
     }
     if (range.location > content.length - 1 || range.length > content.length || (range.location + range.length > content.length)) {
         return 0;
     }
-    return strtoul([[content substringWithRange:range] UTF8String],0,16);
+    const char *utf8 = [content UTF8String];
+    if (utf8 == NULL) {
+        return 0;
+    }
+    // 全部是 ASCII 字符，UTF-8 偏移与 NSString 的下标一致，可直接按字节解析
+    return (NSInteger)mkb_hexToULL(utf8 + range.location, range.length);
 }
+
 + (NSString *)getDecimalStringWithHex:(NSString *)content range:(NSRange)range{
     NSInteger decimalValue = [self getDecimalWithHex:content range:range];
     return [NSString stringWithFormat:@"%ld",(long)decimalValue];
@@ -95,25 +152,39 @@
     if (tempNumber.length == 1) {
         tempNumber = [@"0" stringByAppendingString:tempNumber];
     }
-    NSData *data = [self stringToData:tempNumber];
-    NSData *resultData = [data subdataWithRange:NSMakeRange(data.length - 1, 1)];
-    return [self hexStringFromData:resultData];
+    // 原实现是转成 NSData 后取最后一个字节再转小写十六进制，等价于取最后两个字符后转小写
+    if (tempNumber.length < 2) {
+        return @"";
+    }
+    return [[tempNumber substringFromIndex:tempNumber.length - 2] lowercaseString];
 }
 
 + (NSNumber *)signedHexTurnString:(NSString *)content{
     if (!MKValidStr(content)) {
         return @(0);
     }
-    NSData *tempData = [self stringToData:content];
-    NSInteger lenth = [tempData length];
-    NSString *maxHexString = [self headString:@"F" trilString:@"F" strLenth:lenth];
-    NSString *centerHexString = [self headString:@"8" trilString:@"0" strLenth:lenth];
-    if ([[self numberHexString:content] longLongValue] - [[self numberHexString:centerHexString] longLongValue] < 0) {
-        return [self numberHexString:content];
+    // 原来的 [self stringToData:content].length 就是字节数，这里直接用字符数计算，两者等价
+    NSInteger lenth = (NSInteger)((content.length + 1) / 2);
+    if (lenth > 8) {
+        // 超过 64bit 的情况保持原有 NSScanner 逻辑，避免出现任何行为差异
+        return [self signedHexTurnStringByScanner:content];
     }
-    unsigned long long maxValue = [[self numberHexString:content] longLongValue];
-    unsigned long long minValue = [[self numberHexString:maxHexString] longLongValue];
-    return [NSNumber numberWithLongLong:(maxValue - minValue - 1)];
+    const char *utf8 = [content UTF8String];
+    if (utf8 == NULL) {
+        return @(0);
+    }
+    unsigned long long value = mkb_hexToULL(utf8, strlen(utf8));
+    if (lenth == 8) {
+        // 64bit 满宽度，本身即为补码表示
+        return [NSNumber numberWithLongLong:(long long)value];
+    }
+    // centerHexString = "0x8" + (2*lenth-1) 个 "0"，即 2^(8*lenth-1)
+    unsigned long long center = 1ULL << (8 * lenth - 1);
+    if (value < center) {
+        return [NSNumber numberWithLongLong:(long long)value];
+    }
+    // 等同于原实现的 maxValue - minValue - 1，即 value - 2^(8*lenth)
+    return [NSNumber numberWithLongLong:(long long)(value - (center << 1))];
 }
 
 + (NSData *)getCrc16VerifyCode:(NSData *)data{
@@ -146,16 +217,12 @@
     if (!MKValidData(sourceData)) {
         return @"";
     }
-    Byte *bytes = (Byte *)[sourceData bytes];
-    //下面是Byte 转换为16进制。
-    NSString *hexStr = @"";
-    for(int i = 0;i < [sourceData length];i++){
-        NSString *newHexStr = [NSString stringWithFormat:@"%x",bytes[i]&0xff];///16进制数
-        if([newHexStr length]==1) {
-            hexStr = [NSString stringWithFormat:@"%@0%@",hexStr,newHexStr];
-        }else {
-            hexStr = [NSString stringWithFormat:@"%@%@",hexStr,newHexStr];
-        }
+    const Byte *bytes = (const Byte *)[sourceData bytes];
+    NSUInteger length = [sourceData length];
+    // 原来的实现每次循环都用 stringWithFormat 拼接整串，复杂度是 O(n²)，这里预分配容量一次写完
+    NSMutableString *hexStr = [NSMutableString stringWithCapacity:length * 2];
+    for (NSUInteger i = 0; i < length; i ++) {
+        [hexStr appendFormat:@"%02x", (unsigned int)(bytes[i] & 0xff)];
     }
     return hexStr;
 }
@@ -164,25 +231,22 @@
     if (!MKValidStr(dataString)) {
         return [NSData data];
     }
-        
-    NSMutableData *hexData = [[NSMutableData alloc] initWithCapacity:20];
-    NSRange range;
-    if ([dataString length] % 2 == 0) {
-        range = NSMakeRange(0, 2);
-    } else {
-        range = NSMakeRange(0, 1);
+    const char *utf8 = [dataString UTF8String];
+    if (utf8 == NULL) {
+        return [NSData data];
     }
-    for (NSInteger i = range.location; i < [dataString length]; i += 2) {
-        unsigned int anInt;
-        NSString *hexCharStr = [dataString substringWithRange:range];
-        NSScanner *scanner = [[NSScanner alloc] initWithString:hexCharStr];
-        
-        [scanner scanHexInt:&anInt];
-        NSData *entity = [[NSData alloc] initWithBytes:&anInt length:1];
-        [hexData appendData:entity];
-        
-        range.location += range.length;
-        range.length = 2;
+    size_t length = strlen(utf8);
+    // 原来的实现每两个字符创建一次 substring + NSScanner + NSData，这里直接按字节解析
+    NSMutableData *hexData = [[NSMutableData alloc] initWithCapacity:length / 2 + 1];
+    size_t location = 0;
+    // 奇数长度时首个字符单独作为一个字节，与原实现一致
+    size_t currentLength = (length % 2 == 0) ? 2 : 1;
+    while (location < length) {
+        unsigned long long value = mkb_hexToULL(utf8 + location, currentLength);
+        Byte byte = (Byte)(value & 0xff);
+        [hexData appendBytes:&byte length:1];
+        location += currentLength;
+        currentLength = 2;
     }
     return hexData;
 }
@@ -191,44 +255,32 @@
     if (!MKValidStr(character)) {
         return NO;
     }
-    NSString *regex = @"[a-fA-F0-9]*";
-    NSPredicate *pred = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regex];
-    return [pred evaluateWithObject:character];
+    // 原来每次都创建 NSPredicate + 正则，这里改成逐字符查表
+    return mkb_isHexString(character);
 }
 
 + (NSString *)binaryByhex:(NSString *)hex {
     if (!MKValidStr(hex) || ![self checkHexCharacter:hex]) {
         return @"";
     }
+    // 奇数长度前面补一个 "0"，与原实现一致
     if (hex.length % 2 != 0) {
-        
-        NSMutableString *mStr = [[NSMutableString alloc]init];;
-        for (int i = 0; i < 2 - hex.length % 2; i++) {
-            [mStr appendString:@"0"];
+        hex = [@"0" stringByAppendingString:hex];
+    }
+    const char *utf8 = [hex UTF8String];
+    if (utf8 == NULL) {
+        return @"";
+    }
+    NSUInteger length = hex.length;
+    // 原来每次都创建 NSDictionary + O(n²) 拼接字符串，这里用静态查表 + NSMutableString
+    NSMutableString *binaryString = [NSMutableString stringWithCapacity:length * 4];
+    for (NSUInteger i = 0; i < length; i ++) {
+        int digit = mkb_hexCharValue(utf8[i]);
+        if (digit < 0) {
+            continue;
         }
-        hex = [mStr stringByAppendingString:hex];
+        [binaryString appendString:[NSString stringWithUTF8String:kMKBHexBitStrings[digit]]];
     }
-    NSDictionary *hexDic = @{
-                             @"0":@"0000",@"1":@"0001",@"2":@"0010",
-                             @"3":@"0011",@"4":@"0100",@"5":@"0101",
-                             @"6":@"0110",@"7":@"0111",@"8":@"1000",
-                             @"9":@"1001",@"A":@"1010",@"a":@"1010",
-                             @"B":@"1011",@"b":@"1011",@"C":@"1100",
-                             @"c":@"1100",@"D":@"1101",@"d":@"1101",
-                             @"E":@"1110",@"e":@"1110",@"F":@"1111",
-                             @"f":@"1111",
-                             };
-    NSString *binaryString = @"";
-    for (int i=0; i<[hex length]; i++) {
-        NSRange rage;
-        rage.length = 1;
-        rage.location = i;
-        NSString *key = [hex substringWithRange:rage];
-        binaryString = [NSString stringWithFormat:@"%@%@",binaryString,
-                        [NSString stringWithFormat:@"%@",[hexDic objectForKey:key]]];
-        
-    }
-    
     return binaryString;
 }
 
@@ -242,13 +294,20 @@
 }
 
 + (BOOL)isUUIDString:(NSString *)uuid{
-    NSString *uuidPatternString = @"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
-    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:uuidPatternString
-                                                                           options:NSRegularExpressionCaseInsensitive
-                                                                             error:nil];
-    NSInteger numberOfMatches = [regex numberOfMatchesInString:uuid
-                                                       options:kNilOptions
-                                                         range:NSMakeRange(0, uuid.length)];
+    static NSRegularExpression *uuidRegex = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        NSString *uuidPatternString = @"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
+        uuidRegex = [NSRegularExpression regularExpressionWithPattern:uuidPatternString
+                                                               options:NSRegularExpressionCaseInsensitive
+                                                                 error:nil];
+    });
+    if (uuidRegex == nil) {
+        return NO;
+    }
+    NSInteger numberOfMatches = [uuidRegex numberOfMatchesInString:uuid
+                                                           options:kNilOptions
+                                                             range:NSMakeRange(0, uuid.length)];
     return (numberOfMatches > 0);
 }
 
@@ -256,42 +315,39 @@
     if (!MKValidStr(binary) || ![self checkHexCharacter:binary]) {
         return @"";
     }
-    NSDictionary *binaryDic = @{
-        @"0000":@"0",@"0001":@"1",@"0010":@"2",
-        @"0011":@"3",@"0100":@"4",@"0101":@"5",
-        @"0110":@"6",@"0111":@"7",@"1000":@"8",
-        @"1001":@"9",@"1010":@"A",@"1011":@"B",
-        @"1100":@"C",@"1101":@"D",@"1110":@"E",
-        @"1111":@"F",
-    };
-    
     if (binary.length % 8 != 0) {
-        NSMutableString *mStr = [[NSMutableString alloc]init];;
-        for (int i = 0; i < 8 - binary.length % 8; i++) {
-            
+        NSMutableString *mStr = [[NSMutableString alloc] init];
+        for (int i = 0; i < 8 - binary.length % 8; i ++) {
             [mStr appendString:@"0"];
         }
         binary = [mStr stringByAppendingString:binary];
     }
-    
-    NSInteger totalNum = (binary.length / 8);
-    
-    NSString *tempString = @"";
-    
-    for (NSInteger j = 0; j < totalNum; j ++) {
-        NSString *hex = @"";
-        NSString *tempBinary = [binary substringWithRange:NSMakeRange(j * 8, 8)];
-        for (int i = 0; i < tempBinary.length; i += 4) {
-            NSString *key = [tempBinary substringWithRange:NSMakeRange(i, 4)];
-            NSString *value = binaryDic[key];
-            if (value) {
-                hex = [hex stringByAppendingString:value];
+    const char *utf8 = [binary UTF8String];
+    if (utf8 == NULL) {
+        return @"";
+    }
+    NSUInteger length = binary.length;
+    NSMutableString *tempString = [NSMutableString stringWithCapacity:length / 4];
+    for (NSUInteger i = 0; i + 4 <= length; i += 4) {
+        NSInteger value = 0;
+        BOOL validGroup = YES;
+        for (NSUInteger j = 0; j < 4; j ++) {
+            char c = utf8[i + j];
+            if (c == '1') {
+                value = (value << 1) | 1;
+            }else if (c == '0') {
+                value = value << 1;
+            }else {
+                // 原实现从这里取不到字典值，会跳过该组
+                validGroup = NO;
+                break;
             }
         }
-        tempString = [tempString stringByAppendingString:hex];
+        if (!validGroup) {
+            continue;
+        }
+        [tempString appendFormat:@"%lX", (long)value];
     }
-    
-    
     return tempString;
 }
 
@@ -299,15 +355,25 @@
     if (len <= 0) {
         return @"";
     }
-    NSString *valueString = [NSString stringWithFormat:@"%1lx",(unsigned long)value];
-    NSInteger needLen = 2 * len - valueString.length;
-    for (NSInteger i = 0; i < needLen; i ++) {
-        valueString = [@"0" stringByAppendingString:valueString];
-    }
-    return valueString;
+    // 原来的实现循环在前面补 "0"，字符串越长越慢，这里一次格式化完成
+    return [NSString stringWithFormat:@"%0*lx", (int)(2 * len), (unsigned long)value];
 }
 
 #pragma mark - private method
+
+/// 原始 NSScanner 版本，仅用于长度超过 8 字节的极端情况
++ (NSNumber *)signedHexTurnStringByScanner:(NSString *)content {
+    NSData *tempData = [self stringToData:content];
+    NSInteger lenth = [tempData length];
+    NSString *maxHexString = [self headString:@"F" trilString:@"F" strLenth:lenth];
+    NSString *centerHexString = [self headString:@"8" trilString:@"0" strLenth:lenth];
+    if ([[self numberHexString:content] longLongValue] - [[self numberHexString:centerHexString] longLongValue] < 0) {
+        return [self numberHexString:content];
+    }
+    unsigned long long maxValue = [[self numberHexString:content] longLongValue];
+    unsigned long long minValue = [[self numberHexString:maxHexString] longLongValue];
+    return [NSNumber numberWithLongLong:(maxValue - minValue - 1)];
+}
 
 // 16进制转10进制
 + (NSNumber *) numberHexString:(NSString *)aHexString {
@@ -326,7 +392,7 @@
         return nil;
     }
     NSMutableString *string = [NSMutableString stringWithFormat:@"0x%@", headStr];
-    for (int i = 0; i < lenth * 2 - 1; i++)
+    for (int i = 0; i < lenth * 2 - 1; i ++)
     {
         [string appendString:trilStr];
     }

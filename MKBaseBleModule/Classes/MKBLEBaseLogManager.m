@@ -42,9 +42,13 @@ static const char *formatterKey = "formatterKey";
         //写数据部分
         NSFileHandle *fileHandle = [NSFileHandle fileHandleForUpdatingAtPath:filePath];
         [fileHandle seekToEndOfFile];   //将节点跳到文件的末尾
+        // 原来每条数据都单独编码 + 单独 writeData，数据量大时会产生大量系统调用，这里合并成一次写入
+        NSMutableString *contentString = [NSMutableString stringWithCapacity:dataList.count * 32];
         for (NSString *tempData in dataList) {
-            NSString *stringToWrite = [NSString stringWithFormat:@"\n%@  %@",datestr,tempData];
-            NSData *stringData = [stringToWrite dataUsingEncoding:NSUTF8StringEncoding];
+            [contentString appendFormat:@"\n%@  %@",datestr,tempData];
+        }
+        NSData *stringData = [contentString dataUsingEncoding:NSUTF8StringEncoding];
+        if (stringData.length > 0) {
             [fileHandle writeData:stringData];
         }
         [fileHandle closeFile];
